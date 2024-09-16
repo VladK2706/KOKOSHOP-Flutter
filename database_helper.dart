@@ -141,4 +141,58 @@ class DatabaseHelper {
     return await db!.delete('ventas', where: 'ID = ?', whereArgs: [ID]);
   }
 
+	Future<int> insertCarrito(Carrito carrito) async {
+    final db = await database;
+    final carritoMap = carrito.toMap()..remove('id_carrito');
+    return await db!.insert('carrito', carritoMap);
+  }
+
+  Future<List<Carrito>> getCarrito() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query('carrito');
+    return List.generate(maps.length, (i) {
+      return Carrito.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> updateCarrito(Carrito carrito) async {
+    final db = await database;
+    return await db!.update('carrito', carrito.toMap(),
+        where: 'id_carrito = ?', whereArgs: [carrito.id_carrito]);
+  }
+
+  Future<int> deleteCarrito(int id_carrito) async {
+    final db = await database;
+    return await db!.delete('carrito', where: 'id_carrito = ?', whereArgs: [id_carrito]);
+  }
+
+  // CRUD ProductosCarrito
+  Future<int> insertProductoCarrito(productosCarrito productoCarrito) async {
+    final db = await database;
+    final productoCarritoMap = productoCarrito.toMap()..remove('id_carrito');
+    return await db!.insert('productos_carrito', productoCarritoMap);
+  }
+
+  Future<List<productosCarrito>> getProductosCarrito() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query('productos_carrito');
+    return List.generate(maps.length, (i) {
+      return productosCarrito.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> updateProductoCarrito(productosCarrito productoCarrito) async {
+    final db = await database;
+    return await db!.update('productos_carrito', productoCarrito.toMap(),
+        where: 'id_carrito = ? AND id_producto = ?',
+        whereArgs: [productoCarrito.id_carrito, productoCarrito.id_producto]);
+  }
+
+  Future<int> deleteProductoCarrito(int id_carrito, int id_producto) async {
+    final db = await database;
+    return await db!.delete('productos_carrito',
+        where: 'id_carrito = ? AND id_producto = ?',
+        whereArgs: [id_carrito, id_producto]);
+  }
+}
 }
