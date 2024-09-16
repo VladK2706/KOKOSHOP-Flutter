@@ -83,6 +83,30 @@ class DatabaseHelper {
     FOREIGN KEY (id_producto) REFERENCES productos(Id_producto)
     );
     ''');
+
+	    await db.execute('''
+    CREATE TABLE ventas(
+	  Id_venta INTEGER primary key AUTOINCREMENT,
+	  Id_usuario INTEGER NOT NULL,
+    precio double,
+    fechaVenta TEXT,
+    tipoVenta TEXT,
+    estado TEXT,
+    FOREIGN KEY (Id_usuario) REFERENCES usuarios(ID)
+    );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE productos_venta(
+      Id_venta INTEGER NOT NULL,
+      Id_producto INTEGER NOT NULL,
+      cantidad INTEGER NOT NULL,
+      
+      FOREIGN KEY (Id_venta) REFERENCES ventas(Id_venta)
+      FOREIGN KEY (Id_producto) REFERENCES productos(Id_producto)
+      
+      );
+    ''');
   }
 
   // CRUD Usuario
