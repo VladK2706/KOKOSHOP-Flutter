@@ -91,4 +91,29 @@ class DatabaseHelper {
     return await db!.delete('usuarios', where: 'ID = ?', whereArgs: [ID]);
   }
 
+	// CRUD Productos
+  Future<int> insertProducto(Producto producto) async {
+    final db = await database;
+    return await db!.insert('productos', producto.toMap());
+  }
+
+  Future<List<Producto>> getProductos() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query('productos');
+    return List.generate(maps.length, (i) {
+      return Producto.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> updateProducto(Producto producto) async {
+    final db = await database;
+    return await db!.update('productos', producto.toMap(),
+        where: 'Id_producto = ?', whereArgs: [producto.id_producto]);
+  }
+
+  Future<int> deleteProducto(int id_producto) async {
+    final db = await database;
+    return await db!.delete('productos', where: 'Id_producto = ?', whereArgs: [id_producto]);
+  }
+
 }
