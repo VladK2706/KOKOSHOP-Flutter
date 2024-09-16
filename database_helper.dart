@@ -65,6 +65,26 @@ class DatabaseHelper {
     );
     ''');
   }
+	 await db.execute('''
+    CREATE TABLE carrito (
+      id_carrito INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_cli INTEGER NOT NULL,
+      FOREIGN KEY (id_cli) REFERENCES usuarios(ID)
+    );
+    ''');
+
+    await db.execute('''
+    CREATE TABLE productos_carrito(
+    id_carrito INTEGER,
+    id_producto INTEGER,
+    cantidad_product INTEGER,
+    PRIMARY KEY (id_carrito, id_producto),
+    FOREIGN KEY (id_carrito) REFERENCES carrito(id_carrito),
+    FOREIGN KEY (id_producto) REFERENCES productos(Id_producto)
+    );
+    ''');
+  }
+
   // CRUD Usuario
 
   Future<int> insertUsuario(Usuario usuario) async {
