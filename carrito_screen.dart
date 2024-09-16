@@ -62,7 +62,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
                         _formKey.currentState!.save();
                         if (id_carrito == null) {
                           await _dbHelper.insertCarrito(Carrito(
-                            id_carrito: 0,  // Asignado automáticamente por SQLite (AUTOINCREMENT)
                             id_cli: _id_cli,
                           ));
                           print("Carrito agregado correctamente");
@@ -90,7 +89,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
     );
   }
 
-  // Borrar Carrito
   void _deleteCarrito(int id_carrito) async {
     await _dbHelper.deleteCarrito(id_carrito);
     _refreshCarritos();
@@ -124,7 +122,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete),
-                      onPressed: () => _deleteCarrito(carrito.id_carrito),
+                      onPressed: () => _deleteCarrito(carrito.id_carrito!),
                     ),
                   ],
                 ),
