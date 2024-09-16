@@ -141,6 +141,7 @@ class DatabaseHelper {
     return await db!.delete('ventas', where: 'ID = ?', whereArgs: [ID]);
   }
 
+	//crud carrito
 	Future<int> insertCarrito(Carrito carrito) async {
     final db = await database;
     final carritoMap = carrito.toMap()..remove('id_carrito');
