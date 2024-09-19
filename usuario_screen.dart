@@ -277,8 +277,9 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
             itemBuilder: (context, index) {
               final usuario = snapshot.data![index];
               return ListTile(
-                title: Text(usuario.nombre),
-                subtitle: Text('Usuario ID: ${usuario.ID}'),
+
+                title: Text('ID: ${usuario.ID} ' + usuario.nombre + usuario.apellido),
+                subtitle: Text('Rol: ${usuario.rol}'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
