@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'usuario_screen.dart';
-//import 'entidad_screen.dart';
-//import 'proyecto_screen.dart';
+import 'producto_screen.dart';
+import 'ventas_screen.dart';
+import 'carrito_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -23,7 +24,34 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => UsuarioScreen()),
                 );
               },
-              child: Text('Gestionar Usuarios'),
+              child: Text('Usuarios'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProductoScreen()),
+                );
+              },
+              child: Text('Productos'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => VentasScreen()),
+                );
+              },
+              child: Text('Ventas'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CarritoScreen()),
+                );
+              },
+              child: Text('Carritos de Compras'),
             ),
             /*
             ElevatedButton(
