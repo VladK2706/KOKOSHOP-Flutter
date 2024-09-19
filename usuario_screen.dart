@@ -264,7 +264,7 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Proyectos'),
+        title: Text('Usuarios'),
       ),
       body: FutureBuilder<List<Usuario>>(
         future: _dbHelper.getUsuario(),

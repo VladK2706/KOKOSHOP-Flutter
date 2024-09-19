@@ -3,7 +3,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'modelo/usuario.dart';
-// import 'modelo/proyecto.dart';
+import 'modelo/producto.dart';
+import 'modelo/Carrito.dart';
+import 'modelo/ventas.dart';
+import 'modelo/productos_venta.dart';
+import 'modelo/productos_carrito.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -64,7 +68,7 @@ class DatabaseHelper {
     FOREIGN KEY (Id_producto) REFERENCES productos(Id_producto)
     );
     ''');
-  }
+
 	 await db.execute('''
     CREATE TABLE carrito (
       id_carrito INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -240,4 +244,4 @@ class DatabaseHelper {
         whereArgs: [id_carrito, id_producto]);
   }
 }
-}
+

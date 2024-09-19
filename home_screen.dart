@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => UsuarioScreen()),
                 );
               },
-              child: Text('Gestionar Entidades'),
+              child: Text('Gestionar Usuarios'),
             ),
             /*
             ElevatedButton(
