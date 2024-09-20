@@ -24,6 +24,8 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
+    await deleteDatabase(join(await getDatabasesPath(), 'kokoshop.db'));
+
     String path = join(await getDatabasesPath(), 'kokoshop.db');
     return await openDatabase(
       path,
@@ -60,17 +62,6 @@ class DatabaseHelper {
     tipo_producto TEXT NOT NULL
     );
     ''');
-  /*
-    await db.execute('''
-    CREATE TABLE cantidad_talla(
-	  Id_producto INTEGER NOT NULL,
-    talla TEXT,
-    cantidad INTEGER,
-    FOREIGN KEY (Id_producto) REFERENCES productos(Id_producto)
-    );
-    ''');
-
-   */
 
 	 await db.execute('''
     CREATE TABLE carrito (
@@ -115,6 +106,8 @@ class DatabaseHelper {
       );
     ''');
   }
+
+
 
   // CRUD Usuario
 
