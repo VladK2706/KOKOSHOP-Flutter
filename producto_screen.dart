@@ -9,8 +9,9 @@ class ProductoScreen extends StatefulWidget {
 
 class _ProductoScreenState extends State<ProductoScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _produc_nom = '';
-  double _produc_precio = 0.0;
+  String _nombre = '';
+  int _cantidad = 0;
+  double _precio = 0.0;
   String _tipo_producto = '';
   DatabaseHelper _dbHelper = DatabaseHelper();
 
@@ -28,8 +29,9 @@ class _ProductoScreenState extends State<ProductoScreen> {
     if (id_producto != null) {
       final producto = (await _dbHelper.getProductos())
           .firstWhere((element) => element.id_producto == id_producto);
-      _produc_nom = producto.produc_nom;
-      _produc_precio = producto.produc_precio;
+      _nombre = producto.nombre;
+      _cantidad = producto.cantidad;
+      _precio = producto.precio;
       _tipo_producto = producto.tipo_producto;
     }
 
@@ -44,7 +46,7 @@ class _ProductoScreenState extends State<ProductoScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  initialValue: _produc_nom,
+                  initialValue: _nombre,
                   decoration: InputDecoration(labelText: 'Nombre del Producto'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -53,11 +55,25 @@ class _ProductoScreenState extends State<ProductoScreen> {
                     return null;
                   },
                   onSaved: (value) {
-                    _produc_nom = value!;
+                    _nombre = value!;
+                  },
+                ),
+
+                TextFormField(
+                  initialValue: _cantidad.toString(),
+                  decoration: InputDecoration(labelText: 'Cantidad del Producto'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingrese la cantidad del producto';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    _cantidad = int.parse(value!);
                   },
                 ),
                 TextFormField(
-                  initialValue: _produc_precio.toString(),
+                  initialValue: _precio.toString(),
                   decoration: InputDecoration(labelText: 'Precio'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -69,7 +85,7 @@ class _ProductoScreenState extends State<ProductoScreen> {
                     return null;
                   },
                   onSaved: (value) {
-                    _produc_precio = double.parse(value!);
+                    _precio = double.parse(value!);
                   },
                 ),
                 TextFormField(
@@ -92,15 +108,17 @@ class _ProductoScreenState extends State<ProductoScreen> {
                       _formKey.currentState!.save();
                       if (id_producto == null) {
                         await _dbHelper.insertProducto(Producto(
-                          produc_nom: _produc_nom,
-                          produc_precio: _produc_precio,
+                          nombre: _nombre,
+                          cantidad: _cantidad,
+                          precio: _precio,
                           tipo_producto: _tipo_producto,
                         ));
                       } else {
                         await _dbHelper.updateProducto(Producto(
                           id_producto: id_producto,
-                          produc_nom: _produc_nom,
-                          produc_precio: _produc_precio,
+                          nombre: _nombre,
+                          cantidad: _cantidad,
+                          precio: _precio,
                           tipo_producto: _tipo_producto,
                         ));
                       }
@@ -140,8 +158,8 @@ class _ProductoScreenState extends State<ProductoScreen> {
             itemBuilder: (context, index) {
               final producto = snapshot.data![index];
               return ListTile(
-                title: Text(producto.produc_nom),
-                subtitle: Text('Precio: \$${producto.produc_precio.toStringAsFixed(2)}'),
+                title: Text(producto.nombre),
+                subtitle: Text('Precio: \$${producto.precio.toStringAsFixed(2)}'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

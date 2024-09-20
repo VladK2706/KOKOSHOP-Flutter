@@ -54,12 +54,13 @@ class DatabaseHelper {
     await db.execute('''
     CREATE TABLE productos(
 	  Id_producto INTEGER primary key AUTOINCREMENT, 
-    produc_nom TEXT NOT NULL,
-    produc_precio real NOT NULL,
+    nombre TEXT NOT NULL,
+    cantidad INTEGER NOT NULL,
+    precio real NOT NULL,
     tipo_producto TEXT NOT NULL
     );
     ''');
-
+  /*
     await db.execute('''
     CREATE TABLE cantidad_talla(
 	  Id_producto INTEGER NOT NULL,
@@ -68,6 +69,8 @@ class DatabaseHelper {
     FOREIGN KEY (Id_producto) REFERENCES productos(Id_producto)
     );
     ''');
+
+   */
 
 	 await db.execute('''
     CREATE TABLE carrito (
