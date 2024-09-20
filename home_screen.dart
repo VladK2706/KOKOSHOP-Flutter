@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CarritoScreen()),
+                  MaterialPageRoute(builder: (context) => CarritosScreen()),
                 );
               },
               child: Text('Carritos de Compras'),

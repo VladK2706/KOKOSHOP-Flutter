@@ -14,7 +14,7 @@ class Producto {
   });
 
   factory Producto.fromMap(Map<String, dynamic> json) => Producto(
-    id_producto: json['Id_producto'],
+    id_producto: json['id_producto'],
     nombre: json['nombre'],
     cantidad: json['cantidad'],
     precio: json['precio'],
@@ -22,7 +22,7 @@ class Producto {
   );
 
   Map<String, dynamic> toMap() => {
-    'Id_producto': id_producto,
+    'id_producto': id_producto,
     'nombre': nombre,
     'cantidad': cantidad,
     'precio': precio,
