@@ -246,5 +246,30 @@ class DatabaseHelper {
         where: 'id_carrito = ? AND id_producto = ?',
         whereArgs: [id_carrito, id_producto]);
   }
+	// CRUD ProductoVenta
+  Future<int> insertProductoVenta(ProductoVenta productoventa) async {
+    final db = await database;
+    return await db!.insert('ProductoVenta', productoventa.toMap());
+  }
+
+  Future<List<ProductoVenta>> getProductoVenta() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query('ProductoVenta');
+    return List.generate(maps.length, (i) {
+      return ProductoVenta.fromMap(maps[i]);
+    });
+  }
+
+  Future<int> updateProductoVenta(ProductoVenta productoventa) async {
+    final db = await database;
+    return await db!.update('ProductoVenta', productoventa.toMap(),
+        where: 'Id_venta = ?', whereArgs: [productoventa.idVenta]);
+  }
+
+  Future<int> deleteProductoVenta(int idVenta) async {
+    final db = await database;
+    return await db!.delete(
+        'ProductoVenta', where: 'Id_venta = ?', whereArgs: [idVenta]);
+  }
 }
 
