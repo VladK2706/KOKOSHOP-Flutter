@@ -41,9 +41,9 @@ class _CarritosScreenState extends State<CarritosScreen> {
             onTap: () {
               // Navegar a la pantalla que muestra los productos del carrito
               Navigator.push(
+
                 context,
-                MaterialPageRoute(
-                  builder: (context) => ProductosCarritoScreen(carrito: carrito),
+                MaterialPageRoute(builder: (context) => ProductosCarritoScreen(carrito: carrito),
                 ),
               );
             },

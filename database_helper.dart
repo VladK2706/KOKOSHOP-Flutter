@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'modelo/usuario.dart';
 import 'modelo/producto.dart';
-import 'modelo/Carrito.dart';
+import 'modelo/carrito.dart';
 import 'modelo/ventas.dart';
 import 'modelo/productos_venta.dart';
 import 'modelo/productos_carrito.dart';
@@ -196,9 +196,13 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db!.query('carrito');
     return List.generate(maps.length, (i) {
-      return Carrito.fromMap(maps[i]);
+      return Carrito(
+        id_cli: maps[i]['id_cli'],
+        // Añade otros atributos de la clase Carrito
+      );
     });
   }
+
 
   Future<int> updateCarrito(Carrito carrito) async {
     final db = await database;
