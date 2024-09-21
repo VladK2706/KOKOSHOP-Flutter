@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'database_helper.dart'; // Tu archivo con las operaciones de la base de datos
+import 'database_helper.dart';
 import 'modelo/carrito.dart';
-import 'productos_carrito_screen.dart';// Tu modelo Carrito
+import 'productos_carrito_screen.dart';
 
 class CarritosScreen extends StatefulWidget {
   @override
@@ -17,12 +17,59 @@ class _CarritosScreenState extends State<CarritosScreen> {
     cargarCarritos();
   }
 
+  Future<void> crearCarrito(int idCliente) async {
+    var dbHelper = DatabaseHelper();
+    var nuevoCarrito = Carrito(id_cli: idCliente);
+    await dbHelper.insertarCarrito(nuevoCarrito);
+    cargarCarritos(); // Recargar los carritos
+  }
+
+
   Future<void> cargarCarritos() async {
     var dbHelper = DatabaseHelper();
     List<Carrito> carritosCargados = await dbHelper.getCarrito();
     setState(() {
       carritos = carritosCargados;
     });
+  }
+
+  void _mostrarFormularioCrearCarrito() {
+    final TextEditingController idClienteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Crear Carrito'),
+          content: TextField(
+            controller: idClienteController,
+            decoration: InputDecoration(labelText: 'ID Cliente'),
+            keyboardType: TextInputType.number,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (idClienteController.text.isNotEmpty) {
+                  int idCliente = int.parse(idClienteController.text);
+                  Carrito nuevoCarrito = Carrito(id_cli: idCliente);
+                  var dbHelper = DatabaseHelper();
+                  await dbHelper.insertarCarrito(nuevoCarrito);
+                  Navigator.of(context).pop();
+                  cargarCarritos(); // Recargar la lista de carritos
+                }
+              },
+              child: Text('Crear'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -39,16 +86,18 @@ class _CarritosScreenState extends State<CarritosScreen> {
             title: Text('Carrito ${carrito.id_carrito}'),
             subtitle: Text('ID Cliente: ${carrito.id_cli}'),
             onTap: () {
-              // Navegar a la pantalla que muestra los productos del carrito
               Navigator.push(
-
                 context,
-                MaterialPageRoute(builder: (context) => ProductosCarritoScreen(carrito: carrito),
-                ),
+                MaterialPageRoute(builder: (context) => ProductosCarritoScreen(carrito: carrito)),
               );
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _mostrarFormularioCrearCarrito,
+        tooltip: 'Crear Carrito',
+        child: Icon(Icons.add),
       ),
     );
   }

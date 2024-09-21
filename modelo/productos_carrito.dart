@@ -1,9 +1,9 @@
-class productosCarrito {
+class ProductosCarrito {
    final int id_carrito;
    final int id_producto;
    final int cantidad_product;
 
-   productosCarrito({
+   ProductosCarrito({
       required this.id_carrito,
       required this.id_producto,
       required this.cantidad_product,
@@ -17,8 +17,8 @@ class productosCarrito {
       };
    }
 
-   factory productosCarrito.fromMap(Map<String, dynamic> map) {
-      return productosCarrito(
+   factory ProductosCarrito.fromMap(Map<String, dynamic> map) {
+      return ProductosCarrito(
          id_carrito: map['id_carrito'],
          id_producto: map['id_producto'],
          cantidad_product: map['cantidad_product'],

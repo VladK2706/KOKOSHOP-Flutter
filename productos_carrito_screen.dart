@@ -24,6 +24,8 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
     super.initState();
     cargarProductosCarrito();
     cargarProductosDisponibles();
+    print("Carrito: ${widget.carrito}");
+    print("Producto Seleccionado: $productoSeleccionado");
   }
 
   Future<void> cargarProductosCarrito() async {
@@ -45,17 +47,29 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
   }
 
   Future<void> agregarProductoAlCarrito() async {
-    if (productoSeleccionado != null) {
+    print("Intentando agregar producto al carrito...");
+    if (productoSeleccionado != null && widget.carrito.id_carrito != null) {
       var dbHelper = DatabaseHelper();
-      var productoCarrito = ProductosCarrito(
-        id_carrito: widget.carrito.id_carrito!,
-        id_producto: productoSeleccionado!.id_producto!,
-        cantidad: cantidadSeleccionada,
-      );
-      await dbHelper.insertProductoCarrito(productoCarrito);
-      cargarProductosCarrito(); // Refrescar la lista
+
+      // Verificamos que id_producto no sea nulo
+      if (productoSeleccionado!.id_producto != null) {
+        var productoCarrito = ProductosCarrito(
+          id_carrito: widget.carrito.id_carrito!,
+          id_producto: productoSeleccionado!.id_producto!,
+          cantidad_product: cantidadSeleccionada,
+        );
+        await dbHelper.insertProductoCarrito(productoCarrito);
+        cargarProductosCarrito(); // Refrescar la lista
+      } else {
+        // Manejar el caso en que id_producto sea nulo
+        print("Error: id_producto es nulo");
+      }
+    } else {
+      // Manejar el caso en que carrito o productoSeleccionado sean nulos
+      print("Error: carrito o productoSeleccionado son nulos");
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +86,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
                 ProductosCarrito productoCarrito = productosCarrito[index];
                 return ListTile(
                   title: Text('Producto ID: ${productoCarrito.id_producto}'),
-                  subtitle: Text('Cantidad: ${productoCarrito.cantidad}'),
+                  subtitle: Text('Cantidad: ${productoCarrito.cantidad_product}'),
                 );
               },
             ),
