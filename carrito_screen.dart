@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'modelo/carrito.dart';
-import 'productos_carrito_screen.dart';
 
 class CarritosScreen extends StatefulWidget {
   @override
@@ -9,67 +8,83 @@ class CarritosScreen extends StatefulWidget {
 }
 
 class _CarritosScreenState extends State<CarritosScreen> {
-  List<Carrito> carritos = [];
+  final _formKey = GlobalKey<FormState>();
+  int _idCliente = 0;
+  DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
   void initState() {
     super.initState();
-    cargarCarritos();
+    _dbHelper = DatabaseHelper();
   }
 
-  Future<void> crearCarrito(int idCliente) async {
-    var dbHelper = DatabaseHelper();
-    var nuevoCarrito = Carrito(id_cli: idCliente);
-    await dbHelper.insertarCarrito(nuevoCarrito);
-    cargarCarritos(); // Recargar los carritos
+  Future<void> _loadCarritos() async {
+    setState(() {});
   }
 
+  void _showForm(int? idCarrito) async {
+    if (idCarrito != null) {
+      final carrito = (await _dbHelper.getCarrito())
+          .firstWhere((element) => element.id_carrito == idCarrito);
+      _idCliente = carrito.id_cli;
+    }
 
-  Future<void> cargarCarritos() async {
-    var dbHelper = DatabaseHelper();
-    List<Carrito> carritosCargados = await dbHelper.getCarrito();
-    setState(() {
-      carritos = carritosCargados;
-    });
-  }
-
-  void _mostrarFormularioCrearCarrito() {
-    final TextEditingController idClienteController = TextEditingController();
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Crear Carrito'),
-          content: TextField(
-            controller: idClienteController,
-            decoration: InputDecoration(labelText: 'ID Cliente'),
-            keyboardType: TextInputType.number,
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    initialValue: _idCliente != 0 ? _idCliente.toString() : '',
+                    decoration: InputDecoration(labelText: 'ID Cliente'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese la ID del cliente';
+                      } else if (int.tryParse(value) == null) {
+                        return 'Debe ser un número válido';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _idCliente = int.parse(value!);
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        if (idCarrito == null) {
+                          // Creating a new cart
+                          await _dbHelper.insertarCarrito(Carrito(id_cli: _idCliente));
+                        } else {
+                          // Updating existing cart
+                          await _dbHelper.updateCarrito(Carrito(id_carrito: idCarrito, id_cli: _idCliente));
+                        }
+                        _loadCarritos();
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: Text(idCarrito == null ? 'Agregar Carrito' : 'Actualizar Carrito'),
+                  ),
+                ],
+              ),
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (idClienteController.text.isNotEmpty) {
-                  int idCliente = int.parse(idClienteController.text);
-                  Carrito nuevoCarrito = Carrito(id_cli: idCliente);
-                  var dbHelper = DatabaseHelper();
-                  await dbHelper.insertarCarrito(nuevoCarrito);
-                  Navigator.of(context).pop();
-                  cargarCarritos(); // Recargar la lista de carritos
-                }
-              },
-              child: Text('Crear'),
-            ),
-          ],
         );
       },
     );
+  }
+
+  void _deleteCarrito(int idCarrito) async {
+    await _dbHelper.deleteCarrito(idCarrito);
+    _loadCarritos();
   }
 
   @override
@@ -78,25 +93,30 @@ class _CarritosScreenState extends State<CarritosScreen> {
       appBar: AppBar(
         title: Text('Carritos de Usuario'),
       ),
-      body: ListView.builder(
-        itemCount: carritos.length,
-        itemBuilder: (context, index) {
-          Carrito carrito = carritos[index];
-          return ListTile(
-            title: Text('Carrito ${carrito.id_carrito}'),
-            subtitle: Text('ID Cliente: ${carrito.id_cli}'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProductosCarritoScreen(carrito: carrito)),
+      body: FutureBuilder<List<Carrito>>(
+        future: _dbHelper.getCarrito(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final carrito = snapshot.data![index];
+              return ListTile(
+                title: Text('Carrito ID: ${carrito.id_carrito}, ID Cliente: ${carrito.id_cli}'),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () => _deleteCarrito(carrito.id_carrito!),
+                ),
+                onTap: () => _showForm(carrito.id_carrito), // Editar carrito
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _mostrarFormularioCrearCarrito,
-        tooltip: 'Crear Carrito',
+        onPressed: () => _showForm(null), // Crear nuevo carrito
         child: Icon(Icons.add),
       ),
     );

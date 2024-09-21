@@ -187,14 +187,18 @@ class DatabaseHelper {
 
 	//crud carrito
 // En tu DatabaseHelper
-  Future<void> insertarCarrito(Carrito carrito) async {
+  Future<int> insertarCarrito(Carrito carrito) async {
     final db = await database;
-    await db!.insert(
-      'carrito',
-      carrito.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return await db!.insert('carrito', carrito.toMap());
   }
+/*
+  Future<int> insertUsuario(Usuario usuario) async {
+    final db = await database;
+    return await db!.insert('usuarios', usuario.toMap());
+  }
+
+ */
+
 
 
   Future<List<Carrito>> getCarrito() async {
