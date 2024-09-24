@@ -107,12 +107,13 @@ class _ProductoScreenState extends State<ProductoScreen> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
                       if (id_producto == null) {
-                        await _dbHelper.insertProducto(Producto(
+                        int newId = await _dbHelper.insertProducto(Producto(
                           nombre: _nombre,
                           cantidad: _cantidad,
                           precio: _precio,
                           tipo_producto: _tipo_producto,
                         ));
+                        print('Nuevo producto creado con ID: $newId');
                       } else {
                         await _dbHelper.updateProducto(Producto(
                           id_producto: id_producto,
@@ -158,7 +159,7 @@ class _ProductoScreenState extends State<ProductoScreen> {
             itemBuilder: (context, index) {
               final producto = snapshot.data![index];
               return ListTile(
-                title: Text(producto.nombre),
+                title: Text('ID: ${producto.id_producto} ' + producto.nombre),
                 subtitle: Text('Precio: \$${producto.precio.toStringAsFixed(2)}'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,

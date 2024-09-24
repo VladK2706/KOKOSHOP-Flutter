@@ -24,7 +24,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    await deleteDatabase(join(await getDatabasesPath(), 'kokoshop.db'));
+    // await deleteDatabase(join(await getDatabasesPath(), 'kokoshop.db'));
 
     String path = join(await getDatabasesPath(), 'kokoshop.db');
     return await openDatabase(
@@ -55,7 +55,7 @@ class DatabaseHelper {
 
     await db.execute('''
     CREATE TABLE productos(
-	  Id_producto INTEGER primary key AUTOINCREMENT, 
+	  id_producto INTEGER primary key AUTOINCREMENT, 
     nombre TEXT NOT NULL,
     cantidad INTEGER NOT NULL,
     precio real NOT NULL,
@@ -138,8 +138,18 @@ class DatabaseHelper {
 	// CRUD Productos
   Future<int> insertProducto(Producto producto) async {
     final db = await database;
-    return await db!.insert('productos', producto.toMap());
+    var productoMap = producto.toMap()..remove('id_producto');
+    return await db!.insert('productos', productoMap);
   }
+  /*
+
+  Future<int> insertarCarrito(Carrito carrito) async {
+    final db = await database;
+    // Creamos una copia del mapa del carrito y removemos el id_carrito
+    var carritoMap = carrito.toMap()..remove('id_carrito');
+    return await db!.insert('carrito', carritoMap);
+  }
+   */
 
   Future<List<Producto>> getProductos() async {
     final db = await database;
@@ -189,7 +199,9 @@ class DatabaseHelper {
 // En tu DatabaseHelper
   Future<int> insertarCarrito(Carrito carrito) async {
     final db = await database;
-    return await db!.insert('carrito', carrito.toMap());
+    // Creamos una copia del mapa del carrito y removemos el id_carrito
+    var carritoMap = carrito.toMap()..remove('id_carrito');
+    return await db!.insert('carrito', carritoMap);
   }
 /*
   Future<int> insertUsuario(Usuario usuario) async {
@@ -206,8 +218,8 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db!.query('carrito');
     return List.generate(maps.length, (i) {
       return Carrito(
+        id_carrito: maps[i]['id_carrito'],
         id_cli: maps[i]['id_cli'],
-        // Añade otros atributos de la clase Carrito
       );
     });
   }
@@ -231,11 +243,15 @@ class DatabaseHelper {
     return await db!.insert('productos_carrito', productoCarritoMap);
   }
 
-  Future<List<ProductosCarrito>> getProductosCarrito() async {
+  Future<List<ProductosCarrito>> getProductosCarrito(int id_carrito) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db!.query('productos_carrito');
+    final List<Map<String, dynamic>> maps = await db!.query('productos_carrito', where: 'id_carrito = ?', whereArgs: [id_carrito]);
     return List.generate(maps.length, (i) {
-      return ProductosCarrito.fromMap(maps[i]);
+      return ProductosCarrito(
+          id_carrito: maps[i]['id_carrito'] as int? ?? 0,
+          id_producto: maps[i]['id_producto'] as int? ?? 0,
+          cantidad_product: maps[i]['cantidad_product'] as int? ?? 0
+      );
     });
   }
 

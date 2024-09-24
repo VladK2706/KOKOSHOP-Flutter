@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'modelo/carrito.dart';
+import 'productos_carrito_screen.dart';
 
 class CarritosScreen extends StatefulWidget {
   @override
@@ -62,7 +63,8 @@ class _CarritosScreenState extends State<CarritosScreen> {
                         _formKey.currentState!.save();
                         if (idCarrito == null) {
                           // Creating a new cart
-                          await _dbHelper.insertarCarrito(Carrito(id_cli: _idCliente));
+                          int newId = await _dbHelper.insertarCarrito(Carrito(id_cli: _idCliente));
+                          print('Nuevo carrito creado con ID: $newId');
                         } else {
                           // Updating existing cart
                           await _dbHelper.updateCarrito(Carrito(id_carrito: idCarrito, id_cli: _idCliente));
@@ -109,14 +111,22 @@ class _CarritosScreenState extends State<CarritosScreen> {
                   icon: Icon(Icons.delete),
                   onPressed: () => _deleteCarrito(carrito.id_carrito!),
                 ),
-                onTap: () => _showForm(carrito.id_carrito), // Editar carrito
+                onTap: () {
+                  // Navegar a ProductosCarritoScreen cuando se toca un carrito
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductosCarritoScreen(carrito: carrito),
+                    ),
+                  ).then((_) => _loadCarritos()); // Recargar la lista después de volver
+                },
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showForm(null), // Crear nuevo carrito
+        onPressed: () => _showForm(null),
         child: Icon(Icons.add),
       ),
     );

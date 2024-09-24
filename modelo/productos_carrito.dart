@@ -19,9 +19,9 @@ class ProductosCarrito {
 
    factory ProductosCarrito.fromMap(Map<String, dynamic> map) {
       return ProductosCarrito(
-         id_carrito: map['id_carrito'],
-         id_producto: map['id_producto'],
-         cantidad_product: map['cantidad_product'],
+         id_carrito: map['id_carrito'] as int? ?? 0,
+         id_producto: map['id_producto'] as int? ?? 0,
+         cantidad_product: map['cantidad_product'] as int? ?? 0,
       );
    }
 }

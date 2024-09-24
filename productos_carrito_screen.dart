@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'modelo/productos_carrito.dart';
@@ -22,52 +23,99 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
   @override
   void initState() {
     super.initState();
-    cargarProductosCarrito();
+    cargarProductosCarrito(widget.carrito.id_carrito);
     cargarProductosDisponibles();
     print("Carrito: ${widget.carrito}");
     print("Producto Seleccionado: $productoSeleccionado");
   }
 
-  Future<void> cargarProductosCarrito() async {
+  Future<void> cargarProductosCarrito(int? id_carrito) async {
     var dbHelper = DatabaseHelper();
-    List<ProductosCarrito> productos = await dbHelper.getProductosCarrito();
+    List<ProductosCarrito> productos = await dbHelper.getProductosCarrito(id_carrito!);
+
+    // Verifica si los productos se obtienen correctamente
+    print("Productos en el carrito: ${productos.length}");
+
     setState(() {
       productosCarrito = productos
           .where((producto) => producto.id_carrito == widget.carrito.id_carrito)
           .toList();
+
+      // Verifica si la lista se actualiza
+      print("Productos en el carrito después del setState: ${productosCarrito.length}");
+      print(productoSeleccionado?.nombre);
     });
   }
+
 
   Future<void> cargarProductosDisponibles() async {
     var dbHelper = DatabaseHelper();
     List<Producto> productos = await dbHelper.getProductos();
     setState(() {
       productosDisponibles = productos;
+      print("Productos disponibles: ${productosDisponibles.length}");
+      for (var producto in productosDisponibles) {
+        print("Producto: ${producto.nombre}, ID: ${producto.id_producto}");
+      }
     });
   }
 
   Future<void> agregarProductoAlCarrito() async {
     print("Intentando agregar producto al carrito...");
-    if (productoSeleccionado != null && widget.carrito.id_carrito != null) {
-      var dbHelper = DatabaseHelper();
+    print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
 
-      // Verificamos que id_producto no sea nulo
-      if (productoSeleccionado!.id_producto != null) {
-        var productoCarrito = ProductosCarrito(
-          id_carrito: widget.carrito.id_carrito!,
-          id_producto: productoSeleccionado!.id_producto!,
-          cantidad_product: cantidadSeleccionada,
-        );
-        await dbHelper.insertProductoCarrito(productoCarrito);
-        cargarProductosCarrito(); // Refrescar la lista
-      } else {
-        // Manejar el caso en que id_producto sea nulo
-        print("Error: id_producto es nulo");
-      }
-    } else {
-      // Manejar el caso en que carrito o productoSeleccionado sean nulos
-      print("Error: carrito o productoSeleccionado son nulos");
+    print("ID del carrito: ${widget.carrito.id_carrito}");
+
+    if (productoSeleccionado == null) {
+      print("Error: No se ha seleccionado ningún producto");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, selecciona un producto')),
+      );
+      return;
     }
+
+    if (widget.carrito.id_carrito == null) {
+      print("Error: El ID del carrito es nulo");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ID del carrito no válido')),
+      );
+      return;
+    }
+
+    if (productoSeleccionado!.id_producto == null) {
+      print("Error: El ID del producto es nulo");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ID del producto no válido')),
+      );
+      return;
+    }
+    var dbHelper = DatabaseHelper();
+    var productoCarrito = ProductosCarrito(
+      id_carrito: widget.carrito.id_carrito!,
+      id_producto: productoSeleccionado!.id_producto!,
+      cantidad_product: cantidadSeleccionada,
+    );
+
+    try {
+      await dbHelper.insertProductoCarrito(productoCarrito);
+      print("Producto agregado al carrito con éxito");
+
+      // Refresca la lista de productos en el carrito
+      await cargarProductosCarrito(widget.carrito.id_carrito);
+
+      // Fuerza una actualización de la UI
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Producto agregado al carrito')),
+      );
+    } catch (e) {
+      print("Error al agregar producto al carrito: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al agregar producto al carrito')),
+      );
+    }
+
   }
 
 
@@ -102,12 +150,13 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
                   onChanged: (Producto? nuevoProducto) {
                     setState(() {
                       productoSeleccionado = nuevoProducto;
+                      print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
                     });
                   },
                   items: productosDisponibles.map((Producto producto) {
                     return DropdownMenuItem<Producto>(
                       value: producto,
-                      child: Text(producto.nombre),
+                      child: Text("${producto.nombre} (ID: ${producto.id_producto})"),
                     );
                   }).toList(),
                 ),
@@ -146,3 +195,5 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
     );
   }
 }
+
+
