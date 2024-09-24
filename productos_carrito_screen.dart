@@ -17,36 +17,30 @@ class ProductosCarritoScreen extends StatefulWidget {
 class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
   List<ProductosCarrito> productosCarrito = [];
   List<Producto> productosDisponibles = [];
+  int _idCarrito = 0;
   Producto? productoSeleccionado;
   int cantidadSeleccionada = 1;
 
   @override
   void initState() {
     super.initState();
-    cargarProductosCarrito(widget.carrito.id_carrito);
+    _idCarrito = widget.carrito.id_carrito!;
+    cargarProductosCarrito();
     cargarProductosDisponibles();
     print("Carrito: ${widget.carrito}");
     print("Producto Seleccionado: $productoSeleccionado");
   }
 
-  Future<void> cargarProductosCarrito(int? id_carrito) async {
+  Future<void> cargarProductosCarrito() async {
     var dbHelper = DatabaseHelper();
-    List<ProductosCarrito> productos = await dbHelper.getProductosCarrito(id_carrito!);
-
-    // Verifica si los productos se obtienen correctamente
-    print("Productos en el carrito: ${productos.length}");
-
+    List<ProductosCarrito> productosencarrito = await dbHelper.getProductosCarrito(_idCarrito);
     setState(() {
-      productosCarrito = productos
-          .where((producto) => producto.id_carrito == widget.carrito.id_carrito)
-          .toList();
+      productosCarrito = productosencarrito;
 
-      // Verifica si la lista se actualiza
       print("Productos en el carrito después del setState: ${productosCarrito.length}");
       print(productoSeleccionado?.nombre);
     });
   }
-
 
   Future<void> cargarProductosDisponibles() async {
     var dbHelper = DatabaseHelper();
@@ -101,7 +95,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
       print("Producto agregado al carrito con éxito");
 
       // Refresca la lista de productos en el carrito
-      await cargarProductosCarrito(widget.carrito.id_carrito);
+      await cargarProductosCarrito();
 
       // Fuerza una actualización de la UI
       setState(() {});
@@ -131,7 +125,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
             child: ListView.builder(
               itemCount: productosCarrito.length,
               itemBuilder: (context, index) {
-                ProductosCarrito productoCarrito = productosCarrito[index];
+                final ProductosCarrito productoCarrito = productosCarrito[index];
                 return ListTile(
                   title: Text('Producto ID: ${productoCarrito.id_producto}'),
                   subtitle: Text('Cantidad: ${productoCarrito.cantidad_product}'),

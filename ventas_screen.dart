@@ -1,3 +1,4 @@
+/*
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -101,12 +102,19 @@ class _VentasScreenState extends State<VentasScreen> {
                         _formKey.currentState!.save();
                         print("Datos guardados:  $_fechaVenta, $_tipoVenta, etc.");
                         if (ID == null) {
+                          await _dbHelper.insertVentas(ventas())
+                          
+                          
+                          /*
                           await _dbHelper.insertVentas(Ventas(
                             fechaVenta: _fechaVenta,
                             tipoVenta: _tipoVenta,
                             estado: _estado,
 
                           ));
+                          
+                           */
+                          
                           print("venta actualizada correctamente");
                         } else {
                           await _dbHelper.updateVentas(Ventas(
@@ -184,3 +192,6 @@ class _VentasScreenState extends State<VentasScreen> {
       ),
     );
   }
+
+
+ */
