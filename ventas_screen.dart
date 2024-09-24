@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
-import 'modelo/ventas.dart';
+import 'Modelo/ventas.dart';
 
 class VentasScreen extends StatefulWidget {
   @override
@@ -11,7 +11,7 @@ class VentasScreen extends StatefulWidget {
 
 class _VentasScreenState extends State<VentasScreen> {
   final _formKey = GlobalKey<FormState>();
-  double _precio = 0.0;
+
   String _fechaVenta = '';
   String _tipoVenta = '';
   String _estado = '';
@@ -31,7 +31,7 @@ class _VentasScreenState extends State<VentasScreen> {
     if (ID != null) {
       final ventas = (await _dbHelper.getVentas())
           .firstWhere((element) => element.ID == ID);
-      _precio = ventas.precio;
+
       _fechaVenta = ventas.fechaVenta;
       _tipoVenta = ventas.tipoVenta;
       _estado = ventas.estado;
@@ -49,19 +49,7 @@ class _VentasScreenState extends State<VentasScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextFormField(
-                    initialValue:_precio.toString(),
-                    decoration: InputDecoration(labelText: 'Precio'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese el precio del producto';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _precio = double.parse(value!);
-                    },
-                  ),
+
                   TextFormField(
                     initialValue: _fechaVenta,
                     decoration: InputDecoration(labelText: 'Fecha de la venta'),
@@ -111,10 +99,9 @@ class _VentasScreenState extends State<VentasScreen> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        print("Datos guardados: $_precio, $_fechaVenta, $_tipoVenta, etc.");
+                        print("Datos guardados:  $_fechaVenta, $_tipoVenta, etc.");
                         if (ID == null) {
                           await _dbHelper.insertVentas(Ventas(
-                            precio: _precio,
                             fechaVenta: _fechaVenta,
                             tipoVenta: _tipoVenta,
                             estado: _estado,
@@ -124,7 +111,6 @@ class _VentasScreenState extends State<VentasScreen> {
                         } else {
                           await _dbHelper.updateVentas(Ventas(
                             ID: ID,
-                            precio: _precio,
                             fechaVenta: _fechaVenta,
                             tipoVenta: _tipoVenta,
                             estado: _estado,
@@ -198,4 +184,3 @@ class _VentasScreenState extends State<VentasScreen> {
       ),
     );
   }
-}
