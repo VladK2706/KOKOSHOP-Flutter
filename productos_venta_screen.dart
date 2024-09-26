@@ -1,34 +1,51 @@
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
-import 'Modelo/productos_venta.dart';
-import 'Modelo/usuario.dart';
-import 'Modelo/producto.dart';
+import 'modelo/productos_venta.dart';
+import 'modelo/venta.dart';
+import 'modelo/producto.dart';
 
 class ProductosVentaScreen extends StatefulWidget {
+  final Venta venta;
+
+  ProductosVentaScreen({required this.venta});
   @override
   _ProductosVentaScreenState createState() => _ProductosVentaScreenState();
 }
 
 class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
-  final _formKey = GlobalKey<FormState>();
+  List<ProductoVenta> productosVenta = [];
+  List<Producto> productosDisponibles = [];
   int _idVenta = 0;
-  int _idProducto = 0;
-  int _cantidad = 0;
-  int _idCliente = 0;  // ID del cliente
-  List<Map<String, dynamic>> _productos = []; // Lista de productos
-  DatabaseHelper _dbHelper = DatabaseHelper();
+  Producto? productoSeleccionado;
+  int cantidadSeleccionada = 1;
 
   @override
   void initState() {
     super.initState();
-    _dbHelper = DatabaseHelper();
-    _fetchProductos();  // Llamada para obtener los productos
+    _idVenta = widget.venta.Id_venta!;
+    cargarProductosVenta();  // Llamada para obtener los productos
   }
 
-  void _fetchProductos() async {
-    final productos = await _dbHelper.getProductos(); // Debes implementar este método
+  Future<void> cargarProductosVenta() async {
+    var dbHelper = DatabaseHelper();
+    List<ProductoVenta> productosenventa = await dbHelper.getProductoVentas(_idVenta);
     setState(() {
-      _productos = productos.cast<Map<String, dynamic>>();
+      productosVenta = productosenventa;
+
+      print("Productos en el carrito después del setState: ${productosVenta.length}");
+      print(productoSeleccionado?.nombre);
+    });
+  }
+
+  Future<void> cargarProductosDisponibles() async {
+    var dbHelper = DatabaseHelper();
+    List<Producto> productos = await dbHelper.getProductos();
+    setState(() {
+      productosDisponibles = productos;
+      print("Productos disponibles: ${productosDisponibles.length}");
+      for (var producto in productosDisponibles) {
+        print("Producto: ${producto.nombre}, ID: ${producto.id_producto}");
+      }
     });
   }
 

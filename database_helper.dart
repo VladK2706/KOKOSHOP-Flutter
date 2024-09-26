@@ -5,7 +5,7 @@ import 'package:sqflite/sqlite_api.dart';
 import 'modelo/usuario.dart';
 import 'modelo/producto.dart';
 import 'modelo/carrito.dart';
-import 'modelo/ventas.dart';
+import 'modelo/venta.dart';
 import 'modelo/productos_venta.dart';
 import 'modelo/productos_carrito.dart';
 
@@ -97,11 +97,11 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE productos_venta(
       Id_venta INTEGER NOT NULL,
-      Id_producto INTEGER NOT NULL,
+      id_producto INTEGER NOT NULL,
       cantidad INTEGER NOT NULL,
       
       FOREIGN KEY (Id_venta) REFERENCES ventas(Id_venta)
-      FOREIGN KEY (Id_producto) REFERENCES productos(Id_producto)
+      FOREIGN KEY (id_producto) REFERENCES productos(Id_producto)
       
       );
     ''');
@@ -171,28 +171,28 @@ class DatabaseHelper {
   }
 
 	//crud ventas
-  Future<int> insertVentas(Ventas ventas) async {
+  Future<int> insertVentas(Venta ventas) async {
     final db = await database;
     return await db!.insert('ventas', ventas.toMap());
   }
 
-  Future<List<Ventas>> getVentas() async {
+  Future<List<Venta>> getVentas() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db!.query('ventas');
     return List.generate(maps.length, (i) {
-      return Ventas.fromMap(maps[i]);
+      return Venta.fromMap(maps[i]);
     });
   }
 
-  Future<int> updateVentas(Ventas ventas) async {
+  Future<int> updateVentas(Venta ventas) async {
     final db = await database;
     return await db!.update('ventas', ventas.toMap(),
-        where: 'ID = ?', whereArgs: [ventas.ID]);
+        where: 'Id_venta = ?', whereArgs: [ventas.Id_venta]);
   }
 
-  Future<int> deleteVentas(int ID) async {
+  Future<int> deleteVentas(int Id_venta) async {
     final db = await database;
-    return await db!.delete('ventas', where: 'ID = ?', whereArgs: [ID]);
+    return await db!.delete('ventas', where: 'Id_venta = ?', whereArgs: [Id_venta]);
   }
 
 	//crud carrito
@@ -237,7 +237,7 @@ class DatabaseHelper {
   }
 
   // CRUD ProductosCarrito
-  Future<int> insertProductoCarrito(ProductosCarrito productoCarrito) async {
+  Future<int> insertProductoCarrito(ProductoCarrito productoCarrito) async {
     final db = await database;
     final productoCarritoMap = productoCarrito.toMap();
     return await db!.insert('productos_carrito', productoCarritoMap);
@@ -245,7 +245,7 @@ class DatabaseHelper {
 
 
 
-  Future<List<ProductosCarrito>> getProductosCarrito(int id_carrito) async {
+  Future<List<ProductoCarrito>> getProductosCarrito(int id_carrito) async {
     try {
       final db = await database;
       if (db == null) {
@@ -259,7 +259,7 @@ class DatabaseHelper {
       );
 
       return List.generate(maps.length, (i) {
-        return ProductosCarrito(
+        return ProductoCarrito(
           id_carrito: maps[i]['id_carrito'] as int? ?? 0,
           id_producto: maps[i]['id_producto'] as int? ?? 0,
           cantidad_product: maps[i]['cantidad_product'] as int? ?? 0,
@@ -271,7 +271,7 @@ class DatabaseHelper {
     }
   }
 
-  Future<int> updateProductoCarrito(ProductosCarrito productoCarrito) async {
+  Future<int> updateProductoCarrito(ProductoCarrito productoCarrito) async {
     final db = await database;
     return await db!.update('productos_carrito', productoCarrito.toMap(),
         where: 'id_carrito = ? AND id_producto = ?',
@@ -298,10 +298,36 @@ class DatabaseHelper {
     });
   }
 
+  Future<List<ProductoVenta>> getProductoVentas(int id_venta) async {
+    try {
+      final db = await database;
+      if (db == null) {
+        throw Exception('No se pudo obtener la base de datos');
+      }
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'productos_venta',
+        where: 'Id_venta = ?',
+        whereArgs: [id_venta],
+      );
+
+      return List.generate(maps.length, (i) {
+        return ProductoVenta(
+          id_venta: maps[i]['id_venta'] as int? ?? 0,
+          id_producto: maps[i]['id_producto'] as int? ?? 0,
+          cantidad: maps[i]['cantidad'] as int? ?? 0,
+        );
+      });
+    } catch (e) {
+      print('Error al obtener productos del carrito: $e');
+      return [];
+    }
+  }
+
   Future<int> updateProductoVenta(ProductoVenta productoventa) async {
     final db = await database;
     return await db!.update('ProductoVenta', productoventa.toMap(),
-        where: 'Id_venta = ?', whereArgs: [productoventa.idVenta]);
+        where: 'Id_venta = ?', whereArgs: [productoventa.id_venta]);
   }
 
   Future<int> deleteProductoVenta(int idVenta) async {
@@ -310,4 +336,5 @@ class DatabaseHelper {
         'ProductoVenta', where: 'Id_venta = ?', whereArgs: [idVenta]);
   }
 }
+
 

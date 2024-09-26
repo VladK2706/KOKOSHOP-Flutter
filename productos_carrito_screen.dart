@@ -15,7 +15,7 @@ class ProductosCarritoScreen extends StatefulWidget {
 }
 
 class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
-  List<ProductosCarrito> productosCarrito = [];
+  List<ProductoCarrito> productosCarrito = [];
   List<Producto> productosDisponibles = [];
   int _idCarrito = 0;
   Producto? productoSeleccionado;
@@ -33,7 +33,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
 
   Future<void> cargarProductosCarrito() async {
     var dbHelper = DatabaseHelper();
-    List<ProductosCarrito> productosencarrito = await dbHelper.getProductosCarrito(_idCarrito);
+    List<ProductoCarrito> productosencarrito = await dbHelper.getProductosCarrito(_idCarrito);
     setState(() {
       productosCarrito = productosencarrito;
 
@@ -84,7 +84,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
       return;
     }
     var dbHelper = DatabaseHelper();
-    var productoCarrito = ProductosCarrito(
+    var productoCarrito = ProductoCarrito(
       id_carrito: widget.carrito.id_carrito!,
       id_producto: productoSeleccionado!.id_producto!,
       cantidad_product: cantidadSeleccionada,
@@ -125,7 +125,7 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
             child: ListView.builder(
               itemCount: productosCarrito.length,
               itemBuilder: (context, index) {
-                final ProductosCarrito productoCarrito = productosCarrito[index];
+                final ProductoCarrito productoCarrito = productosCarrito[index];
                 return ListTile(
                   title: Text('Producto ID: ${productoCarrito.id_producto}'),
                   subtitle: Text('Cantidad: ${productoCarrito.cantidad_product}'),

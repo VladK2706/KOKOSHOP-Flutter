@@ -1,9 +1,9 @@
-/*
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
-import 'Modelo/ventas.dart';
+import 'modelo/venta.dart';
+import 'productos_venta_screen.dart';
 
 class VentasScreen extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class VentasScreen extends StatefulWidget {
 
 class _VentasScreenState extends State<VentasScreen> {
   final _formKey = GlobalKey<FormState>();
-
+  int _Id_usuario = 0;
   String _fechaVenta = '';
   String _tipoVenta = '';
   String _estado = '';
@@ -30,13 +30,12 @@ class _VentasScreenState extends State<VentasScreen> {
 
   void _showForm(int? ID) async {
     if (ID != null) {
-      final ventas = (await _dbHelper.getVentas())
-          .firstWhere((element) => element.ID == ID);
-
-      _fechaVenta = ventas.fechaVenta;
-      _tipoVenta = ventas.tipoVenta;
-      _estado = ventas.estado;
-
+      final venta = (await _dbHelper.getVentas())
+          .firstWhere((element) => element.Id_venta == ID);
+      _Id_usuario = venta.Id_usuario;
+      _fechaVenta = venta.fechaVenta;
+      _tipoVenta = venta.tipoVenta;
+      _estado = venta.estado;
     }
 
     showModalBottomSheet(
@@ -50,6 +49,21 @@ class _VentasScreenState extends State<VentasScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'ID Cliente'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese el ID del cliente';
+                      } else if (int.tryParse(value) == null) {
+                        return 'Debe ser un número válido';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _Id_usuario = int.parse(value!);
+                    },
+                  ),
+
 
                   TextFormField(
                     initialValue: _fechaVenta,
@@ -100,25 +114,23 @@ class _VentasScreenState extends State<VentasScreen> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        print("Datos guardados:  $_fechaVenta, $_tipoVenta, etc.");
+                        print(
+                            "Datos guardados:  $_fechaVenta, $_tipoVenta, etc.");
                         if (ID == null) {
-                          await _dbHelper.insertVentas(ventas())
-                          
-                          
-                          /*
-                          await _dbHelper.insertVentas(Ventas(
+                          await _dbHelper.insertVentas(Venta(
+                            Id_usuario: _Id_usuario,
                             fechaVenta: _fechaVenta,
                             tipoVenta: _tipoVenta,
                             estado: _estado,
 
                           ));
-                          
-                           */
-                          
+
+
                           print("venta actualizada correctamente");
                         } else {
-                          await _dbHelper.updateVentas(Ventas(
-                            ID: ID,
+                          await _dbHelper.updateVentas(Venta(
+                            Id_venta: ID,
+                            Id_usuario: _Id_usuario,
                             fechaVenta: _fechaVenta,
                             tipoVenta: _tipoVenta,
                             estado: _estado,
@@ -127,7 +139,7 @@ class _VentasScreenState extends State<VentasScreen> {
                         }
                         _refreshVentas();
                         Navigator.of(context).pop();
-                      }else {
+                      } else {
                         print("Formulario no válido");
                       }
                     },
@@ -140,7 +152,6 @@ class _VentasScreenState extends State<VentasScreen> {
         );
       },
     );
-
   }
 
   // Borrar Usuario
@@ -155,7 +166,7 @@ class _VentasScreenState extends State<VentasScreen> {
       appBar: AppBar(
         title: Text('Ventas'),
       ),
-      body: FutureBuilder<List<Ventas>>(
+      body: FutureBuilder<List<Venta>>(
         future: _dbHelper.getVentas(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -164,23 +175,36 @@ class _VentasScreenState extends State<VentasScreen> {
           return ListView.builder(
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              final ventas = snapshot.data![index];
+              final venta = snapshot.data![index];
               return ListTile(
-                title: Text(ventas.fechaVenta),
-                subtitle: Text('Ventas ID: ${ventas.ID}'),
+                title: Text(venta.fechaVenta),
+                subtitle: Text('Ventas ID: ${venta.Id_venta}'),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: Icon(Icons.edit),
-                      onPressed: () => _showForm(ventas.ID),
+                      onPressed: () => _showForm(venta.Id_venta),
                     ),
                     IconButton(
                       icon: Icon(Icons.delete),
-                      onPressed: () => _deleteUsuario(ventas.ID!),
+                      onPressed: () => _deleteUsuario(venta.Id_venta!),
                     ),
                   ],
                 ),
+
+                onTap: () {
+                  // Navegar a ProductosCarritoScreen cuando se toca un carrito
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductosVentaScreen(venta: venta),
+                    ),
+                  ).then((_) => _refreshVentas()); // Recargar la lista después de volver
+                },
+
+
+
               );
             },
           );
@@ -192,6 +216,4 @@ class _VentasScreenState extends State<VentasScreen> {
       ),
     );
   }
-
-
- */
+}

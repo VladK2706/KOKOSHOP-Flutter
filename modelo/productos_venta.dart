@@ -1,23 +1,27 @@
 class ProductoVenta {
-  int? idVenta;
-  int idProducto;
+  int id_venta;
+  int id_producto;
   int cantidad;
 
   ProductoVenta({
-    this.idVenta,
-    required this.idProducto,
+    required this.id_venta,
+    required this.id_producto,
     required this.cantidad,
   });
 
-  factory ProductoVenta.fromMap(Map<String, dynamic> json) => ProductoVenta(
-    idVenta: json['idVenta'],
-    idProducto: json['idProducto'],
-    cantidad: json['cantidad'],
-  );
+  Map<String, dynamic> toMap() {
+    return {
+      'id_venta': id_venta,
+      'id_producto': id_producto,
+      'cantidad': cantidad,
+    };
+  }
 
-  Map<String, dynamic> toMap() => {
-    'idVenta': idVenta,
-    'idProducto': idProducto,
-    'cantidad': cantidad,
-  };
+  factory ProductoVenta.fromMap(Map<String, dynamic> map) {
+    return ProductoVenta(
+      id_venta: map['id_venta'] as int? ?? 0,
+      id_producto: map['id_producto'] as int? ?? 0,
+      cantidad: map['cantidad'] as int? ?? 0,
+    );
+  }
 }
