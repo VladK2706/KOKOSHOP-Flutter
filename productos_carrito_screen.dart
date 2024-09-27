@@ -14,7 +14,7 @@ class ProductosCarritoScreen extends StatefulWidget {
 }
 
 class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
-  List<ProductoCarrito> productosCarrito = [];
+  List<Map<String, dynamic>> productosEnCarrito = [];
   List<Producto> productosDisponibles = [];
   int _idCarrito = 0;
   Producto? productoSeleccionado;
@@ -26,18 +26,25 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
     _idCarrito = widget.carrito.id_carrito!;
     cargarProductosCarrito();
     cargarProductosDisponibles();
-    print("Carrito: ${widget.carrito}");
-    print("Producto Seleccionado: $productoSeleccionado");
   }
 
   Future<void> cargarProductosCarrito() async {
     var dbHelper = DatabaseHelper();
-    List<ProductoCarrito> productosencarrito = await dbHelper.getProductosCarrito(_idCarrito);
-    setState(() {
-      productosCarrito = productosencarrito;
+    List<ProductoCarrito> productosCarrito = await dbHelper.getProductosCarrito(_idCarrito);
+    List<Map<String, dynamic>> productosConNombres = [];
 
-      print("Productos en el carrito después del setState: ${productosCarrito.length}");
-      print(productoSeleccionado?.nombre);
+    for (var productoCarrito in productosCarrito) {
+      Producto? producto = await dbHelper.getProductoById(productoCarrito.id_producto);
+      if (producto != null) {
+        productosConNombres.add({
+          'producto': producto,
+          'cantidad': productoCarrito.cantidad_product,
+        });
+      }
+    }
+
+    setState(() {
+      productosEnCarrito = productosConNombres;
     });
   }
 
@@ -46,42 +53,17 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
     List<Producto> productos = await dbHelper.getProductos();
     setState(() {
       productosDisponibles = productos;
-      print("Productos disponibles: ${productosDisponibles.length}");
-      for (var producto in productosDisponibles) {
-        print("Producto: ${producto.nombre}, ID: ${producto.id_producto}");
-      }
     });
   }
 
   Future<void> agregarProductoAlCarrito() async {
-    print("Intentando agregar producto al carrito...");
-    print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
-
-    print("ID del carrito: ${widget.carrito.id_carrito}");
-
     if (productoSeleccionado == null) {
-      print("Error: No se ha seleccionado ningún producto");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, selecciona un producto')),
       );
       return;
     }
 
-    if (widget.carrito.id_carrito == null) {
-      print("Error: El ID del carrito es nulo");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ID del carrito no válido')),
-      );
-      return;
-    }
-
-    if (productoSeleccionado!.id_producto == null) {
-      print("Error: El ID del producto es nulo");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ID del producto no válido')),
-      );
-      return;
-    }
     var dbHelper = DatabaseHelper();
     var productoCarrito = ProductoCarrito(
       id_carrito: widget.carrito.id_carrito!,
@@ -91,26 +73,17 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
 
     try {
       await dbHelper.insertProductoCarrito(productoCarrito);
-      print("Producto agregado al carrito con éxito");
-
-      // Refresca la lista de productos en el carrito
       await cargarProductosCarrito();
-
-      // Fuerza una actualización de la UI
       setState(() {});
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Producto agregado al carrito')),
       );
     } catch (e) {
-      print("Error al agregar producto al carrito: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al agregar producto al carrito')),
       );
     }
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +95,14 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: productosCarrito.length,
+              itemCount: productosEnCarrito.length,
               itemBuilder: (context, index) {
-                final ProductoCarrito productoCarrito = productosCarrito[index];
+                final productoInfo = productosEnCarrito[index];
+                final Producto producto = productoInfo['producto'];
+                final int cantidad = productoInfo['cantidad'];
                 return ListTile(
-                  title: Text('Producto ID: ${productoCarrito.id_producto}'),
-                  subtitle: Text('Cantidad: ${productoCarrito.cantidad_product}'),
+                  title: Text(producto.nombre),
+                  subtitle: Text('Cantidad: $cantidad'),
                 );
               },
             ),
@@ -143,13 +118,12 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
                   onChanged: (Producto? nuevoProducto) {
                     setState(() {
                       productoSeleccionado = nuevoProducto;
-                      print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
                     });
                   },
                   items: productosDisponibles.map((Producto producto) {
                     return DropdownMenuItem<Producto>(
                       value: producto,
-                      child: Text("${producto.nombre} (ID: ${producto.id_producto})"),
+                      child: Text(producto.nombre),
                     );
                   }).toList(),
                 ),
@@ -188,5 +162,4 @@ class _ProductosCarritoScreenState extends State<ProductosCarritoScreen> {
     );
   }
 }
-
 

@@ -13,6 +13,8 @@ class Producto {
     required this.tipo_producto,
   });
 
+
+
   factory Producto.fromMap(Map<String, dynamic> json) => Producto(
     id_producto: json['id_producto'],
     nombre: json['nombre'],

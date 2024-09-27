@@ -328,6 +328,19 @@ class DatabaseHelper {
     return await db!.delete(
         'productos_venta', where: 'Id_venta = ?', whereArgs: [idVenta]);
   }
+
+  Future<Producto?> getProductoById(int id_producto) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query(
+      'productos',
+      where: 'Id_producto = ?',
+      whereArgs: [id_producto],
+    );
+    if (maps.isNotEmpty) {
+      return Producto.fromMap(maps.first);
+    }
+    return null;
+  }
 }
 
 
