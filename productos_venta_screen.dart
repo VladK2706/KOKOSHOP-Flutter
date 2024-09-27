@@ -49,9 +49,65 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
     });
   }
 
-  void _refreshVentas() {
-    setState(() {});
+  Future<void> agregarProductoAlCarrito() async {
+    print("Intentando agregar producto al carrito...");
+    print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
+
+    print("ID de la venta: ${widget.venta.Id_venta}");
+
+    if (productoSeleccionado == null) {
+      print("Error: No se ha seleccionado ningún producto");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, selecciona un producto')),
+      );
+      return;
+    }
+
+    if (widget.venta.Id_venta == null) {
+      print("Error: El ID de la venta es nulo");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ID del carrito no válido')),
+      );
+      return;
+    }
+
+    if (productoSeleccionado!.id_producto == null) {
+      print("Error: El ID del producto es nulo");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ID del producto no válido')),
+      );
+      return;
+    }
+    var dbHelper = DatabaseHelper();
+    var productoCarrito = ProductoCarrito(
+      id_carrito: widget.carrito.id_carrito!,
+      id_producto: productoSeleccionado!.id_producto!,
+      cantidad_product: cantidadSeleccionada,
+    );
+
+    try {
+      await dbHelper.insertProductoCarrito(productoCarrito);
+      print("Producto agregado al carrito con éxito");
+
+      // Refresca la lista de productos en el carrito
+      await cargarProductosCarrito();
+
+      // Fuerza una actualización de la UI
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Producto agregado al carrito')),
+      );
+    } catch (e) {
+      print("Error al agregar producto al carrito: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al agregar producto al carrito')),
+      );
+    }
+
   }
+
+
 
   void _showForm(int? idVenta) async {
     if (idVenta != null) {
