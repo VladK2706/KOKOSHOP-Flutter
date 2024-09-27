@@ -24,7 +24,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB() async {
-    // await deleteDatabase(join(await getDatabasesPath(), 'kokoshop.db'));
+    //await deleteDatabase(join(await getDatabasesPath(), 'kokoshop.db'));
 
     String path = join(await getDatabasesPath(), 'kokoshop.db');
     return await openDatabase(

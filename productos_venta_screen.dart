@@ -13,7 +13,7 @@ class ProductosVentaScreen extends StatefulWidget {
 }
 
 class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
-  List<ProductoVenta> productosVenta = [];
+  List<Map<String, dynamic>> productosEnVenta = [];
   List<Producto> productosDisponibles = [];
   int _idVenta = 0;
   Producto? productoSeleccionado;
@@ -24,17 +24,26 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
     super.initState();
     _idVenta = widget.venta.Id_venta!;
     cargarProductosVenta();
-    cargarProductosDisponibles();// Llamada para obtener los productos
+    cargarProductosDisponibles();
   }
 
   Future<void> cargarProductosVenta() async {
     var dbHelper = DatabaseHelper();
-    List<ProductoVenta> productosenventa = await dbHelper.getProductoVentas(_idVenta);
-    setState(() {
-      productosVenta = productosenventa;
+    List<ProductoVenta> productosVenta = await dbHelper.getProductoVentas(_idVenta);
+    List<Map<String, dynamic>> productosConNombres = [];
 
-      print("Productos en el carrito después del setState: ${productosVenta.length}");
-      print(productoSeleccionado?.nombre);
+    for (var productoVenta in productosVenta) {
+      Producto? producto = await dbHelper.getProductoById(productoVenta.id_producto);
+      if (producto != null) {
+        productosConNombres.add({
+          'producto': producto,
+          'cantidad': productoVenta.cantidad,
+        });
+      }
+    }
+
+    setState(() {
+      productosEnVenta = productosConNombres;
     });
   }
 
@@ -43,42 +52,17 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
     List<Producto> productos = await dbHelper.getProductos();
     setState(() {
       productosDisponibles = productos;
-      print("Productos disponibles: ${productosDisponibles.length}");
-      for (var producto in productosDisponibles) {
-        print("Producto: ${producto.nombre}, ID: ${producto.id_producto}");
-      }
     });
   }
 
   Future<void> agregarProductoAlCarrito() async {
-    print("Intentando agregar producto al carrito...");
-    print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
-
-    print("ID de la venta: ${widget.venta.Id_venta}");
-
     if (productoSeleccionado == null) {
-      print("Error: No se ha seleccionado ningún producto");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, selecciona un producto')),
       );
       return;
     }
 
-    if (widget.venta.Id_venta == null) {
-      print("Error: El ID de la venta es nulo");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ID del carrito no válido')),
-      );
-      return;
-    }
-
-    if (productoSeleccionado!.id_producto == null) {
-      print("Error: El ID del producto es nulo");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ID del producto no válido')),
-      );
-      return;
-    }
     var dbHelper = DatabaseHelper();
     var productoVenta = ProductoVenta(
       id_venta: widget.venta.Id_venta!,
@@ -88,27 +72,17 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
 
     try {
       await dbHelper.insertProductoVenta(productoVenta);
-      print("Producto agregado al carrito con éxito");
-
-      // Refresca la lista de productos en el carrito
       await cargarProductosVenta();
-
-      // Fuerza una actualización de la UI
       setState(() {});
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Producto agregado al carrito')),
+        SnackBar(content: Text('Producto agregado a la venta')),
       );
     } catch (e) {
-      print("Error al agregar producto al carrito: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al agregar producto al carrito')),
+        SnackBar(content: Text('Error al agregar producto a la venta')),
       );
     }
-
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -120,12 +94,14 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: productosVenta.length,
+              itemCount: productosEnVenta.length,
               itemBuilder: (context, index) {
-                final ProductoVenta productoVenta = productosVenta[index];
+                final productoInfo = productosEnVenta[index];
+                final Producto producto = productoInfo['producto'];
+                final int cantidad = productoInfo['cantidad'];
                 return ListTile(
-                  title: Text('Producto ID: ${productoVenta.id_producto}'),
-                  subtitle: Text('Cantidad: ${productoVenta.cantidad}'),
+                  title: Text(producto.nombre),
+                  subtitle: Text('Cantidad: $cantidad'),
                 );
               },
             ),
@@ -141,13 +117,12 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
                   onChanged: (Producto? nuevoProducto) {
                     setState(() {
                       productoSeleccionado = nuevoProducto;
-                      print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
                     });
                   },
                   items: productosDisponibles.map((Producto producto) {
                     return DropdownMenuItem<Producto>(
                       value: producto,
-                      child: Text("${producto.nombre} (ID: ${producto.id_producto})"),
+                      child: Text(producto.nombre),
                     );
                   }).toList(),
                 ),
@@ -176,7 +151,7 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
                 ),
                 ElevatedButton(
                   onPressed: agregarProductoAlCarrito,
-                  child: Text('Agregar Producto al Carrito'),
+                  child: Text('Agregar Producto a la Venta'),
                 ),
               ],
             ),
@@ -186,4 +161,3 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
     );
   }
 }
-
