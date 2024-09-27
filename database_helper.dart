@@ -287,16 +287,9 @@ class DatabaseHelper {
 	// CRUD ProductoVenta
   Future<int> insertProductoVenta(ProductoVenta productoventa) async {
     final db = await database;
-    return await db!.insert('ProductoVenta', productoventa.toMap());
+    return await db!.insert('productos_venta', productoventa.toMap());
   }
 
-  Future<List<ProductoVenta>> getProductoVenta() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db!.query('ProductoVenta');
-    return List.generate(maps.length, (i) {
-      return ProductoVenta.fromMap(maps[i]);
-    });
-  }
 
   Future<List<ProductoVenta>> getProductoVentas(int id_venta) async {
     try {
@@ -326,14 +319,14 @@ class DatabaseHelper {
 
   Future<int> updateProductoVenta(ProductoVenta productoventa) async {
     final db = await database;
-    return await db!.update('ProductoVenta', productoventa.toMap(),
+    return await db!.update('productos_venta', productoventa.toMap(),
         where: 'Id_venta = ?', whereArgs: [productoventa.id_venta]);
   }
 
   Future<int> deleteProductoVenta(int idVenta) async {
     final db = await database;
     return await db!.delete(
-        'ProductoVenta', where: 'Id_venta = ?', whereArgs: [idVenta]);
+        'productos_venta', where: 'Id_venta = ?', whereArgs: [idVenta]);
   }
 }
 

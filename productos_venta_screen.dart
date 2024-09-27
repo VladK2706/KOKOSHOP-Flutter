@@ -23,7 +23,8 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
   void initState() {
     super.initState();
     _idVenta = widget.venta.Id_venta!;
-    cargarProductosVenta();  // Llamada para obtener los productos
+    cargarProductosVenta();
+    cargarProductosDisponibles();// Llamada para obtener los productos
   }
 
   Future<void> cargarProductosVenta() async {
@@ -79,18 +80,18 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
       return;
     }
     var dbHelper = DatabaseHelper();
-    var productoCarrito = ProductoCarrito(
-      id_carrito: widget.carrito.id_carrito!,
+    var productoVenta = ProductoVenta(
+      id_venta: widget.venta.Id_venta!,
       id_producto: productoSeleccionado!.id_producto!,
-      cantidad_product: cantidadSeleccionada,
+      cantidad: cantidadSeleccionada,
     );
 
     try {
-      await dbHelper.insertProductoCarrito(productoCarrito);
+      await dbHelper.insertProductoVenta(productoVenta);
       print("Producto agregado al carrito con éxito");
 
       // Refresca la lista de productos en el carrito
-      await cargarProductosCarrito();
+      await cargarProductosVenta();
 
       // Fuerza una actualización de la UI
       setState(() {});
@@ -109,170 +110,80 @@ class _ProductosVentaScreenState extends State<ProductosVentaScreen> {
 
 
 
-  void _showForm(int? idVenta) async {
-    if (idVenta != null) {
-      final productoventa = (await _dbHelper.getProductoVenta())
-          .firstWhere((element) => element.idVenta == idVenta);
-      _idVenta = productoventa.idVenta ?? 0;
-      _idProducto = productoventa.idProducto;
-      _cantidad = productoventa.cantidad;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Campo para ingresar el ID del cliente
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'ID Cliente'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese el ID del cliente';
-                      } else if (int.tryParse(value) == null) {
-                        return 'Debe ser un número válido';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _idCliente = int.parse(value!);
-                    },
-                  ),
-
-                  // Campo desplegable para seleccionar el producto
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(labelText: 'Producto'),
-                    value: _idProducto,
-                    items: _productos.map((producto) {
-                      return DropdownMenuItem<int>(
-                        value: producto['idProducto'],
-                        child: Text(producto['nombreProducto']),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _idProducto = value!;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value == 0) {
-                        return 'Por favor seleccione un producto';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  // Campo para ingresar la cantidad
-                  TextFormField(
-                    initialValue: _cantidad.toString(),
-                    decoration: InputDecoration(labelText: 'Cantidad'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese la cantidad';
-                      } else if (int.tryParse(value) == null) {
-                        return 'Debe ser un número válido';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      _cantidad = int.parse(value!);
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        print("Datos guardados: Cliente $_idCliente, Venta $_idVenta, Producto $_idProducto, Cantidad $_cantidad");
-                        if (idVenta == null) {
-                          await _dbHelper.insertProductoVenta(ProductoVenta(
-                            idVenta: _idVenta,
-                            idProducto: _idProducto,
-                            cantidad: _cantidad,
-                              // Guarda el ID del cliente
-                          ));
-                          print("Venta insertada correctamente");
-                        } else {
-                          await _dbHelper.updateProductoVenta(ProductoVenta(
-                            idVenta: _idVenta,
-                            idProducto: _idProducto,
-                            cantidad: _cantidad,
-                              // Actualiza el ID del cliente
-                          ));
-                          print("Venta actualizada correctamente");
-                        }
-                        _refreshVentas();
-                        Navigator.of(context).pop();
-                      } else {
-                        print("Formulario no válido");
-                      }
-                    },
-                    child: Text(idVenta == null ? 'Agregar' : 'Actualizar'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _deleteProductoVenta(int idVenta) async {
-    await _dbHelper.deleteProductoVenta(idVenta);
-    _refreshVentas();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Productos Venta'),
+        title: Text('Productos en la venta ${widget.venta.Id_venta}'),
       ),
-      body: FutureBuilder<List<ProductoVenta>>(
-        future: _dbHelper.getProductoVenta(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final productoventa = snapshot.data![index];
-              return ListTile(
-                title: Text(
-                  'ID Venta: ${productoventa.idVenta}, '
-                      'Producto: ${productoventa.idProducto}, '
-                      'Cantidad: ${productoventa.cantidad}',
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: productosVenta.length,
+              itemBuilder: (context, index) {
+                final ProductoVenta productoVenta = productosVenta[index];
+                return ListTile(
+                  title: Text('Producto ID: ${productoVenta.id_producto}'),
+                  subtitle: Text('Cantidad: ${productoVenta.cantidad}'),
+                );
+              },
+            ),
+          ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                DropdownButton<Producto>(
+                  hint: Text('Selecciona un producto'),
+                  value: productoSeleccionado,
+                  onChanged: (Producto? nuevoProducto) {
+                    setState(() {
+                      productoSeleccionado = nuevoProducto;
+                      print("Producto seleccionado: ${productoSeleccionado?.nombre}, ID: ${productoSeleccionado?.id_producto}");
+                    });
+                  },
+                  items: productosDisponibles.map((Producto producto) {
+                    return DropdownMenuItem<Producto>(
+                      value: producto,
+                      child: Text("${producto.nombre} (ID: ${producto.id_producto})"),
+                    );
+                  }).toList(),
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () => _showForm(productoventa.idVenta),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => _deleteProductoVenta(productoventa.idVenta!),
+                    Text('Cantidad:'),
+                    SizedBox(width: 10),
+                    DropdownButton<int>(
+                      value: cantidadSeleccionada,
+                      onChanged: (int? nuevaCantidad) {
+                        setState(() {
+                          cantidadSeleccionada = nuevaCantidad ?? 1;
+                        });
+                      },
+                      items: List.generate(10, (index) => index + 1)
+                          .map((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text('$value'),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showForm(null),
-        child: Icon(Icons.add),
+                ElevatedButton(
+                  onPressed: agregarProductoAlCarrito,
+                  child: Text('Agregar Producto al Carrito'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+

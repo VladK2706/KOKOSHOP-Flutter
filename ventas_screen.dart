@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'database_helper.dart';
 import 'modelo/venta.dart';
@@ -50,6 +48,7 @@ class _VentasScreenState extends State<VentasScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextFormField(
+                    initialValue: _Id_usuario.toString(),
                     decoration: InputDecoration(labelText: 'ID Cliente'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
