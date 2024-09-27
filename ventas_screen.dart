@@ -154,8 +154,8 @@ class _VentasScreenState extends State<VentasScreen> {
   }
 
   // Borrar Usuario
-  void _deleteUsuario(int ID) async {
-    await _dbHelper.deleteUsuario(ID);
+  void _deleteVenta(int ID) async {
+    await _dbHelper.deleteVentas(ID);
     _refreshVentas();
   }
 
@@ -187,7 +187,7 @@ class _VentasScreenState extends State<VentasScreen> {
                     ),
                     IconButton(
                       icon: Icon(Icons.delete),
-                      onPressed: () => _deleteUsuario(venta.Id_venta!),
+                      onPressed: () => _deleteVenta(venta.Id_venta!),
                     ),
                   ],
                 ),
